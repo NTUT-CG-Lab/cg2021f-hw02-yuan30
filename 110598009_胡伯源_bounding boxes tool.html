@@ -93,6 +93,9 @@
 
 		const vpds = [];
 
+		const pointer = new THREE.Vector2();
+		let moving = false, lines = [];
+
 		Ammo().then(function (AmmoLib) {
 
 			Ammo = AmmoLib;
@@ -201,9 +204,11 @@
 
 			}, onProgress, null);
 
-			//
-
+			// 活動宣告
+			container.addEventListener( 'mousedown', onMouseDown );
+			document.addEventListener( 'keydown', onDocumentKeyDown );
 			window.addEventListener('resize', onWindowResize);
+			window.addEventListener( 'mousemove', onMouseMove );
 			// 鏡頭控制 (旋轉：滑鼠左鍵、平移：滑鼠右鍵、縮放：滑鼠滾輪)，預設都 true
 			const cameracontrols = new OrbitControls(camera, renderer.domElement);
 			cameracontrols.minDistance = 10;
@@ -322,6 +327,100 @@
 
 		}
 
+		function onDocumentKeyDown( event ) {
+
+			const keyCode = event.keyCode;
+			
+			// 設定 1~4 keyCode 畫線讓滑鼠使用
+
+			if ( keyCode === 49 || keyCode === 97 ) {
+
+				const points = [];
+				points.push( new THREE.Vector3( 0, 220, 0 ) );
+				points.push( new THREE.Vector3( 30, 220, 0 ) );
+
+				const geometry = new THREE.BufferGeometry().setFromPoints( points );
+
+				let line = new THREE.Line( geometry, new THREE.LineBasicMaterial( { color: 0x0000ff } ) );
+				console.log(line.geometry.getAttribute('position').array[3]);
+				scene.add( line );
+				lines.push( line );
+
+				moving = true;
+
+				return false;
+
+			}
+			if ( keyCode === 50 || keyCode === 98 ) {
+
+				alert("2");
+
+				return false;
+
+			}
+			if ( keyCode === 51 || keyCode === 99 ) {
+
+				alert("3");
+
+				return false;
+
+			}
+			if ( keyCode === 52 || keyCode === 100 ) {
+
+				alert("4");
+
+				return false;
+
+			}
+
+			// A code is 65
+
+			if ( keyCode === 65 ) {
+
+				alert("A");
+
+				return false;
+
+			}
+
+			// D code is 68
+
+			if ( keyCode === 68 ) {
+
+				alert("D");
+
+				return false;
+
+			}
+
+			// Z code is 90
+
+			if ( keyCode === 90 ) {
+
+				alert("Z");
+
+				return false;
+
+			}
+		}
+
+		function onMouseMove( event ) {
+
+				// calculate mouse position in normalized device coordinates
+				// (-1 to +1) for both components
+
+				pointer.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+				pointer.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+
+		}
+
+		function onMouseDown ( event ) {
+
+			if( event.button === 0 )
+				moving = false;
+
+		}
+
 		function onWindowResize() {
 
 			let scale = 30;
@@ -335,7 +434,11 @@
 
 		}
 
-		//
+		function changeModel() {
+			// 當按下 A 或 D 鍵，切換模型
+
+
+		}
 
 		function animate() {
 
@@ -346,8 +449,21 @@
 
 		function render() {
 
+			console.log(pointer);
+			if( moving ) {
+				let index = lines.length - 1;
+
+				lines[index].geometry.getAttribute('position').setX( 0, pointer.x - 20 );
+				lines[index].geometry.getAttribute('position').setY( 0, pointer.y );
+				lines[index].geometry.getAttribute('position').setX( 1, pointer.x + 20 );
+				lines[index].geometry.getAttribute('position').setY( 1, pointer.y );
+				//lines[index].geometry.verticesNeedUpdate = true;
+			}
+
 			effect.render(scene, camera);
 
+			for( let i = 0; i < lines.length; i++)
+				lines[i].geometry.verticesNeedUpdate = true;
 		}
 	</script>
 
