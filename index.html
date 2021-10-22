@@ -19,6 +19,7 @@
 </head>
 
 <body>
+	<div id="scoreTable"></div>
 	<div id="info">
 		<a href="https://threejs.org" target="_blank" rel="noopener">three.js</a> - MMDLoader test<br />
 		<a href="https://github.com/mrdoob/three.js/tree/master/examples/models/mmd#readme" target="_blank"
@@ -73,7 +74,7 @@
 			//產生 "開啟自評表按鈕"
 			so.renderBtn(
 				//自評表按鈕插入位置
-				document.body,
+				document.querySelector("#scoreTable"),
 				//自評表按鈕文字
 				"開啟自評表"
 			);
@@ -93,8 +94,8 @@
 
 		const vpds = [];
 
-		const pointer = new THREE.Vector2();
-		let moving = false, lines = [];
+		const pointer = new THREE.Vector3(0,0,0);
+		let moving = false;
 
 		Ammo().then(function (AmmoLib) {
 
@@ -205,10 +206,12 @@
 			}, onProgress, null);
 
 			// 活動宣告
-			container.addEventListener( 'mousedown', onMouseDown );
-			document.addEventListener( 'keydown', onDocumentKeyDown );
+			var body = document.body;
+			body.addEventListener( 'mousedown', onMouseDown );
+			body.addEventListener( 'keydown', onKeyDown );
+			//body.addEventListener( 'mousemove', onMouseMove );
 			window.addEventListener('resize', onWindowResize);
-			window.addEventListener( 'mousemove', onMouseMove );
+			
 			// 鏡頭控制 (旋轉：滑鼠左鍵、平移：滑鼠右鍵、縮放：滑鼠滾輪)，預設都 true
 			const cameracontrols = new OrbitControls(camera, renderer.domElement);
 			cameracontrols.minDistance = 10;
@@ -327,48 +330,37 @@
 
 		}
 
-		function onDocumentKeyDown( event ) {
+		var indexOfLines = -1;
+		function onKeyDown( event ) {
 
 			const keyCode = event.keyCode;
 			
 			// 設定 1~4 keyCode 畫線讓滑鼠使用
-
 			if ( keyCode === 49 || keyCode === 97 ) {
 
-				const points = [];
-				points.push( new THREE.Vector3( 0, 220, 0 ) );
-				points.push( new THREE.Vector3( 30, 220, 0 ) );
-
-				const geometry = new THREE.BufferGeometry().setFromPoints( points );
-
-				let line = new THREE.Line( geometry, new THREE.LineBasicMaterial( { color: 0x0000ff } ) );
-				console.log(line.geometry.getAttribute('position').array[3]);
-				scene.add( line );
-				lines.push( line );
-
-				moving = true;
-
+				indexOfLines = 0;
+				drawLine();
 				return false;
 
 			}
 			if ( keyCode === 50 || keyCode === 98 ) {
 
-				alert("2");
-
+				indexOfLines = 1;
+				drawLine();
 				return false;
 
 			}
 			if ( keyCode === 51 || keyCode === 99 ) {
 
-				alert("3");
-
+				indexOfLines = 2;
+				drawLine();
 				return false;
 
 			}
 			if ( keyCode === 52 || keyCode === 100 ) {
 
-				alert("4");
-
+				indexOfLines = 3;
+				drawLine();
 				return false;
 
 			}
@@ -393,15 +385,49 @@
 
 			}
 
-			// Z code is 90
+			// Q code is 81
 
-			if ( keyCode === 90 ) {
+			if ( keyCode === 81 ) {
 
-				alert("Z");
+				//let str = 
+				//alert(leftEyeFramePosition[0].x+', '+leftEyeFramePosition[0].y);
 
 				return false;
 
 			}
+		}
+
+		function drawLine() {
+
+			//啟用滑鼠移動取得位置
+			moving = true;
+			document.body.addEventListener( 'mousemove', onMouseMove );
+
+			// 當每案一次按鍵都會重畫，因此要先移除。
+			if(scene.getObjectByName("line" + indexOfLines) != null) {
+				var selectedObject = scene.getObjectByName("line" + indexOfLines);
+				scene.remove(selectedObject);
+			}
+
+			const points = [];
+			let material;
+			if(indexOfLines % 2 == 0) {
+				points.push( new THREE.Vector3( -0.82, 0, 20 ) );
+				points.push( new THREE.Vector3( 0.82, 0, 20 ) );
+				material = new THREE.LineBasicMaterial( { color: 0x0000ff } );
+			}
+			else {
+				points.push( new THREE.Vector3( 0, -0.82, 20 ) );
+				points.push( new THREE.Vector3( 0, 0.82, 20 ) );
+				material = new THREE.LineBasicMaterial( { color: 0xff0080 } );
+			}
+
+			const geometry = new THREE.BufferGeometry().setFromPoints( points );
+
+			let line = new THREE.Line( geometry, material );
+			scene.add( line );
+			line.name = "line" + indexOfLines;
+
 		}
 
 		function onMouseMove( event ) {
@@ -409,15 +435,32 @@
 				// calculate mouse position in normalized device coordinates
 				// (-1 to +1) for both components
 
-				pointer.x = ( event.clientX / window.innerWidth ) * 2 - 1;
-				pointer.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+				//console.log('clientX:'+event.clientX+',clientY:'+event.clientY+'window:'+window.innerHeight+','+window.innerWidth);
+				const { left, top, width, height } = event.currentTarget.getBoundingClientRect();
+				pointer.set(
+					( event.clientX / window.innerWidth ) * 2 - 1,
+					-( event.clientY / window.innerHeight ) * 2 + 1,
+					(camera.near + camera.far) / (camera.near - camera.far),
+				);
+				pointer.unproject(camera);
 
 		}
 
+		let leftEyeFramePosition = [4];
 		function onMouseDown ( event ) {
 
-			if( event.button === 0 )
+			if( event.button === 0 ) {
+
+				if(indexOfLines >= 0) {
+					alert(indexOfLines+', '+leftEyeFramePosition[0].x+', '+leftEyeFramePosition[0].y);
+					leftEyeFramePosition[indexOfLines] = pointer;
+				}
+				indexOfLines = -1;
 				moving = false;
+
+				document.body.removeEventListener( 'mousemove', onMouseMove );
+
+			}
 
 		}
 
@@ -449,21 +492,16 @@
 
 		function render() {
 
-			console.log(pointer);
 			if( moving ) {
-				let index = lines.length - 1;
 
-				lines[index].geometry.getAttribute('position').setX( 0, pointer.x - 20 );
-				lines[index].geometry.getAttribute('position').setY( 0, pointer.y );
-				lines[index].geometry.getAttribute('position').setX( 1, pointer.x + 20 );
-				lines[index].geometry.getAttribute('position').setY( 1, pointer.y );
-				//lines[index].geometry.verticesNeedUpdate = true;
+				var selectedObject = scene.getObjectByName("line"+indexOfLines);
+				selectedObject.position.x = pointer.x;
+				selectedObject.position.y = pointer.y;
+				
 			}
 
 			effect.render(scene, camera);
 
-			for( let i = 0; i < lines.length; i++)
-				lines[i].geometry.verticesNeedUpdate = true;
 		}
 	</script>
 
