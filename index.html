@@ -96,6 +96,12 @@
 
 		const pointer = new THREE.Vector3(0,0,0);
 		let moving = false;
+		const rightEyeFramePosition = [
+			new THREE.Vector2(-0.4787567788790906, 8.402702181783901),
+			new THREE.Vector2(-0.725986973618977, 8.204686800287418),
+			new THREE.Vector2(-0.4906313738030632, 8.01176760305314),
+			new THREE.Vector2(-0.25944327330804995, 8.22827694387209),
+		];
 
 		Ammo().then(function (AmmoLib) {
 
@@ -389,7 +395,7 @@
 
 			if ( keyCode === 81 ) {
 
-				//let str = 
+				copyLine();
 				//alert(leftEyeFramePosition[0].x+', '+leftEyeFramePosition[0].y);
 
 				return false;
@@ -430,6 +436,30 @@
 
 		}
 
+		function copyLine() {
+			for(var i = 0; i < 4; i++) {
+				const points = [];
+				let material;
+				let position = rightEyeFramePosition[i];
+				if(i % 2 == 0) {
+					points.push( new THREE.Vector3( position.x-0.82, position.y, 20 ) );
+					points.push( new THREE.Vector3( position.x+0.82, position.y, 20 ) );
+					material = new THREE.LineBasicMaterial( { color: 0xae00ae } );
+				}
+				else {
+					points.push( new THREE.Vector3( position.x, position.y-0.82, 20 ) );
+					points.push( new THREE.Vector3( position.x, position.y+0.82, 20 ) );
+					material = new THREE.LineBasicMaterial( { color: 0xf75000 } );
+				}
+
+				const geometry = new THREE.BufferGeometry().setFromPoints( points );
+
+				let line = new THREE.Line( geometry, material );
+				scene.add( line );
+				line.name = "lineCopy" + indexOfLines;
+			}
+		}
+
 		function onMouseMove( event ) {
 
 				// calculate mouse position in normalized device coordinates
@@ -452,8 +482,8 @@
 			if( event.button === 0 ) {
 
 				if(indexOfLines >= 0) {
-					alert(indexOfLines+', '+leftEyeFramePosition[0].x+', '+leftEyeFramePosition[0].y);
-					leftEyeFramePosition[indexOfLines] = pointer;
+					//alert(indexOfLines+', '+leftEyeFramePosition[0].x+', '+leftEyeFramePosition[0].y);
+					//leftEyeFramePosition[indexOfLines] = pointer;
 				}
 				indexOfLines = -1;
 				moving = false;
@@ -497,7 +527,7 @@
 				var selectedObject = scene.getObjectByName("line"+indexOfLines);
 				selectedObject.position.x = pointer.x;
 				selectedObject.position.y = pointer.y;
-				
+				leftEyeFramePosition[indexOfLines] = pointer;
 			}
 
 			effect.render(scene, camera);
