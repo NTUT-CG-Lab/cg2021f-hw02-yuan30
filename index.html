@@ -96,13 +96,6 @@
 
 		const pointer = new THREE.Vector3(0,0,0);
 		let moving = false, objectOfLines = [];
-		const rightEyeFramePosition = [
-			new THREE.Vector2(-0.4787567788790906, 8.402702181783901),
-			new THREE.Vector2(-0.725986973618977, 8.204686800287418),
-			new THREE.Vector2(-0.4906313738030632, 8.01176760305314),
-			new THREE.Vector2(-0.25944327330804995, 8.22827694387209),
-		];
-
 		let modelSelected = 0;
 		const modelFiles = [
 			'models/mmd/kizunaai/kizunaai.pmx',
@@ -382,7 +375,7 @@
 
 			if ( keyCode === 65 ) {
 
-				var selectedObject = scene.getObjectByName('model' + modelSelected);
+				var selectedObject = scene.getObjectByName("model" + modelSelected);
 				scene.remove(selectedObject);
 				for(let obj of objectOfLines) {
 					scene.remove(obj);
@@ -402,7 +395,7 @@
 
 			if ( keyCode === 68 ) {
 
-				var selectedObject = scene.getObjectByName('model' + modelSelected);
+				var selectedObject = scene.getObjectByName("model" + modelSelected);
 				scene.remove(selectedObject);
 				for(let obj of objectOfLines) {
 					scene.remove(obj);
@@ -507,10 +500,23 @@
 		}
 
 		function copyLine() {
+			if( scene.getObjectByName("line3") == null ) {
+				alert('請先完成框住左眼的動作');
+				return false;
+			}
+
+			if( scene.getObjectByName("lineCopy3") != null ) {
+				for(var i = 0; i < 4; i++) {
+					var selectedObject = scene.getObjectByName("lineCopy" + i);
+					scene.remove(selectedObject);
+				}
+			}
+
 			for(var i = 0; i < 4; i++) {
 				const points = [];
 				let material;
-				let position = rightEyeFramePosition[i];
+				var correspondingLine = scene.getObjectByName("line" + i);
+				let position = new THREE.Vector2( 0 - correspondingLine.position.x, correspondingLine.position.y );
 				if(i % 2 == 0) {
 					points.push( new THREE.Vector3( position.x-0.82, position.y, 20 ) );
 					points.push( new THREE.Vector3( position.x+0.82, position.y, 20 ) );
@@ -526,7 +532,7 @@
 
 				let line = new THREE.Line( geometry, material );
 				scene.add( line );
-				line.name = "lineCopy" + indexOfLines;
+				line.name = "lineCopy" + i;
 				objectOfLines.push( line );
 
 			}
