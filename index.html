@@ -103,6 +103,8 @@
 			new THREE.Vector2(-0.25944327330804995, 8.22827694387209),
 		];
 
+		let modelSelected = 0;
+		
 		Ammo().then(function (AmmoLib) {
 
 			Ammo = AmmoLib;
@@ -391,8 +393,7 @@
 
 			}
 
-			// Q code is 81
-
+			// 設定 Q 鍵複製眼睛框框到角色右眼 
 			if ( keyCode === 81 ) {
 
 				copyLine();
@@ -400,6 +401,30 @@
 
 				return false;
 
+			}
+			
+			if ( keyCode === 83 ) {
+				
+				//放入 fileData(json資料), fileName, type
+				download('{"name":"John", "age":30, "car":null}', 'model_data.json', 'application/json');
+			}
+		}
+
+		function download(data, filename, type) {
+			var file = new Blob([data], {type: type});
+			if (window.navigator.msSaveOrOpenBlob) // IE10+
+				window.navigator.msSaveOrOpenBlob(file, filename);
+			else { // Others
+				var a = document.createElement("a"),
+						url = URL.createObjectURL(file);
+				a.href = url;
+				a.download = filename;
+				document.body.appendChild(a);
+				a.click();
+				setTimeout(function() {
+					document.body.removeChild(a);
+					window.URL.revokeObjectURL(url);  
+				}, 0); 
 			}
 		}
 
