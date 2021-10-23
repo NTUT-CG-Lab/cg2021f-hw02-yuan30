@@ -104,7 +104,12 @@
 		];
 
 		let modelSelected = 0;
-		
+		const modelFlies = [
+			'models/mmd/kizunaai/kizunaai.pmx',
+			'models/mmd/るいのれ式物述有栖_配布用フォルダ/物述有栖.pmx',
+			'models/mmd/『天宮こころ(Kokoro Amamiya)』/『天宮こころ(Kokoro Amamiya)』.pmx',
+		];
+
 		Ammo().then(function (AmmoLib) {
 
 			Ammo = AmmoLib;
@@ -377,7 +382,10 @@
 
 			if ( keyCode === 65 ) {
 
-				alert("A");
+				modelSelected--;
+
+				if( modelSelected < 0 )
+					modelSelected += 3;
 
 				return false;
 
@@ -387,7 +395,10 @@
 
 			if ( keyCode === 68 ) {
 
-				alert("D");
+				modelSelected++;
+
+				if( modelSelected > 2 )
+					modelSelected = 0;
 
 				return false;
 
@@ -405,8 +416,27 @@
 			
 			if ( keyCode === 83 ) {
 				
-				//放入 fileData(json資料), fileName, type
-				download('{"name":"John", "age":30, "car":null}', 'model_data.json', 'application/json');
+				if( scene.getObjectByName("line3") != null ) {
+					const myData = {
+						"modellist":[
+							{
+							"location":modelFlies[modelSelected],
+							"line_locationx_1":scene.getObjectByName("line0").position.x,
+							"line_locationy_1":scene.getObjectByName("line0").position.y,
+							"line_locationx_2":scene.getObjectByName("line1").position.x,
+							"line_locationy_2":scene.getObjectByName("line1").position.y,
+							"line_locationx_3":scene.getObjectByName("line2").position.x,
+							"line_locationy_3":scene.getObjectByName("line2").position.y,
+							"line_locationx_4":scene.getObjectByName("line3").position.x,
+							"line_locationy_4":scene.getObjectByName("line3").position.y
+							}
+						]
+					};
+					const myJson = JSON.stringify(myData);
+					//放入 fileData(json資料), fileName, type
+					download(myJson, 'model_data.json', 'application/json');
+				}
+				else alert('請先完成框住左眼的動作');
 			}
 		}
 
