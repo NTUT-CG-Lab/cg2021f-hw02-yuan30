@@ -415,12 +415,11 @@
 			if ( keyCode === 81 ) {
 
 				copyLine();
-				//alert(leftEyeFramePosition[0].x+', '+leftEyeFramePosition[0].y);
-
 				return false;
 
 			}
 			
+			// 設定 S 鍵儲存左眼座標
 			if ( keyCode === 83 ) {
 				
 				if( scene.getObjectByName("line3") != null ) {
@@ -444,7 +443,36 @@
 					download(myJson, 'model_data.json', 'application/json');
 				}
 				else alert('請先完成框住左眼的動作');
+				return false;
+
 			}
+
+			// 設定 R 鍵可以讀取 json 檔案
+			if ( keyCode === 82 ) {
+
+				var fileSelected = document.createElement("input");
+				fileSelected.type = "file";
+				fileSelected.click();
+				fileSelected.addEventListener('change', function selectedFileChanged() { 
+					console.log(this.files); // will contain information about the file that was selected. 
+					var reader = new FileReader();
+           			reader.readAsText(this.files[0]);// 讀取檔案的內容
+
+					reader.onload = function(){
+						// 當讀取完成之後會回撥這個函式，然後此時檔案的內容儲存到了 result 中。
+						console.log("讀取結果：", this.result);
+
+						console.log("讀取結果轉為JSON：");
+						let json = JSON.parse(this.result);
+						console.log(json.modellist.length);
+						console.log(typeof json.modellist[0]);
+						console.log(json.modellist[0]);
+					};
+
+				});
+				return false;
+			}
+
 		}
 
 		function download(data, filename, type) {
@@ -456,6 +484,7 @@
 						url = URL.createObjectURL(file);
 				a.href = url;
 				a.download = filename;
+				console.log(url);
 				document.body.appendChild(a);
 				a.click();
 				setTimeout(function() {
@@ -467,7 +496,7 @@
 
 		function drawLine() {
 
-			//啟用滑鼠移動取得位置
+			// 啟用滑鼠移動取得位置
 			moving = true;
 			document.body.addEventListener( 'mousemove', onMouseMove );
 
